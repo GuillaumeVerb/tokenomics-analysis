@@ -551,9 +551,10 @@ def main():
         
         st.markdown("### 🔗 Liens")
         st.markdown("""
-        - [GitHub](https://github.com/)
-        - [Malt](https://www.malt.fr/)
-        - [LinkedIn](https://linkedin.com/)
+        - [GitHub](https://github.com/guillaumeverbiguie)
+        - [Malt](https://www.malt.fr/profile/guillaumeverbiguie)
+        - [LinkedIn](https://www.linkedin.com/in/guillaumeverbiguie)
+        - [Portfolio](https://guillaumeverbiguie.com)
         """)
     
     # Affichage selon le mode
