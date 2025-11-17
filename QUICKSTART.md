@@ -49,6 +49,9 @@ streamlit run app.py
 5. **Restaking / EigenLayer-like** - Collatéral, sécurité économique
 6. **Gouvernance capturée** - Red flags, concentration élevée
 7. **Token mature** - Bitcoin-like, supply quasi complète
+8. **Meme coin / Community token** - Fair launch, pas d'utilité, spéculatif
+9. **RWA Tokenization** - Actifs réels tokenisés, compliance forte
+10. **Modèle Hyperliquid** - 100% community, 0% team/VC (2024)
 
 ### 📈 Scénarios Inflationnistes
 8. **Inflation stable 2%** - Soutenable long terme

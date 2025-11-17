@@ -19,7 +19,10 @@ def get_scenario_categories() -> Dict[str, List[str]]:
             "Modèle Pendle-like",
             "Restaking / Sécurité économique (EigenLayer-like)",
             "Gouvernance capturée",
-            "Token mature (Bitcoin/Ethereum-like)"
+            "Token mature (Bitcoin/Ethereum-like)",
+            "Meme coin / Community token",
+            "RWA Tokenization",
+            "Modèle Hyperliquid (100% community)"
         ],
         "📈 Scénarios Inflationnistes": [
             "Inflation stable 2% / an",
@@ -113,6 +116,15 @@ def get_inflation_projection(scenario_name: str, years: int = 5) -> List[float]:
     
     elif "capturée" in scenario_name:
         return [8.0, 7.0, 6.0, 5.0, 4.0][:years]
+    
+    elif "Meme coin" in scenario_name:
+        return [0.0] * years
+    
+    elif "RWA" in scenario_name:
+        return [0.0] * years
+    
+    elif "Hyperliquid" in scenario_name:
+        return [8.0, 7.5, 7.0, 6.5, 6.0][:years]
     
     else:
         return [5.0] * years
@@ -518,6 +530,86 @@ def get_scenario_params(scenario_name: str) -> Dict[str, Any]:
             "lock_duration_months": 0,
             "burn_rate": 2.5,
             "description": "Burn > emissions = inflation négative. Supply diminue avec l'activité. EIP-1559 like."
+        }
+    
+    # ========== NOUVEAUX SCÉNARIOS 2024-2025 ==========
+    
+    elif scenario_name == "Meme coin / Community token":
+        return {
+            "circulating_supply": 420_690_000_000_000,  # Large supply typique des memecoins
+            "total_supply": 420_690_000_000_000,
+            "max_supply": 420_690_000_000_000,
+            "inflation_rate": 0.0,  # Pas d'émission
+            "emission_years_left": 0,
+            "team_allocation": 0.0,  # Fair launch
+            "vesting_years": 0,
+            "top_10_concentration": 55.0,  # Souvent concentré
+            "utility_gas": False,
+            "utility_staking": False,
+            "utility_governance": False,
+            "utility_collateral": False,
+            "utility_discount": False,
+            "gov_timelock": False,
+            "gov_multisig": True,
+            "gov_dao_active": False,
+            "incentive_lock": False,
+            "incentive_staking": False,
+            "incentive_burn": True,  # Souvent présent
+            "lock_duration_months": 0,
+            "burn_rate": 1.0,
+            "description": "Fair launch, pas d'allocation team, mais aucune utilité réelle. Valeur = narrative + communauté. Risque spéculatif élevé."
+        }
+    
+    elif scenario_name == "RWA Tokenization":
+        return {
+            "circulating_supply": 100_000_000,
+            "total_supply": 100_000_000,
+            "max_supply": 100_000_000,
+            "inflation_rate": 0.0,
+            "emission_years_left": 0,
+            "team_allocation": 25.0,  # Équipe + partenaires traditionnels
+            "vesting_years": 4,
+            "top_10_concentration": 45.0,  # Institutionnels
+            "utility_gas": False,
+            "utility_staking": False,
+            "utility_governance": True,
+            "utility_collateral": True,  # Adossé à un actif réel
+            "utility_discount": False,
+            "gov_timelock": True,
+            "gov_multisig": True,
+            "gov_dao_active": False,  # Souvent hybride on-chain/off-chain
+            "incentive_lock": False,
+            "incentive_staking": False,
+            "incentive_burn": False,
+            "lock_duration_months": 0,
+            "burn_rate": 0.0,
+            "description": "Tokenization d'actifs réels (immobilier, commodités, obligations). Valeur adossée, mais gouvernance souvent centralisée. Compliance forte."
+        }
+    
+    elif scenario_name == "Modèle Hyperliquid (100% community)":
+        return {
+            "circulating_supply": 270_000_000,
+            "total_supply": 1_000_000_000,
+            "max_supply": 1_000_000_000,
+            "inflation_rate": 8.0,
+            "emission_years_left": 6,
+            "team_allocation": 0.0,  # 100% community
+            "vesting_years": 0,
+            "top_10_concentration": 15.0,  # Bien distribué
+            "utility_gas": True,
+            "utility_staking": True,
+            "utility_governance": True,
+            "utility_collateral": True,
+            "utility_discount": True,
+            "gov_timelock": True,
+            "gov_multisig": True,
+            "gov_dao_active": True,
+            "incentive_lock": True,
+            "incentive_staking": True,
+            "incentive_burn": True,
+            "lock_duration_months": 12,
+            "burn_rate": 0.8,
+            "description": "Distribution 100% communauté via points, 0% team/VC. Utilité forte (L1 gas + trading). Modèle innovant 2024."
         }
     
     else:

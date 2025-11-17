@@ -22,8 +22,8 @@ L'analyse produit un **Tokenomics Viability Index** (0–100) et des visualisati
 
 ### 2. Mode Analyse Manuelle Avancée
 - Configuration personnalisée de tous les paramètres
-- 15 scénarios préconfigurés :
-  - **7 scénarios structurels** (early-stage, ETH-like, Curve-like, Pendle-like, etc.)
+- 18 scénarios préconfigurés :
+  - **10 scénarios structurels** (early-stage, ETH-like, Curve-like, Pendle-like, Hyperliquid, meme coins, RWA, etc.)
   - **8 scénarios inflationnistes** (2%, 5%, 10%, 20%, décroissante, halving, seasonal, burn)
 - Projection de dilution sur 5 ans
 - Analyse approfondie de chaque composante

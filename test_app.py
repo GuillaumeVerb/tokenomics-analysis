@@ -17,7 +17,7 @@ def test_scenarios():
     print("🧪 Test du module scenarios...")
     
     scenarios = get_all_scenarios()
-    assert len(scenarios) == 15, f"Expected 15 scenarios, got {len(scenarios)}"
+    assert len(scenarios) == 18, f"Expected 18 scenarios, got {len(scenarios)}"
     print(f"  ✅ {len(scenarios)} scénarios chargés")
     
     # Test d'un scénario
