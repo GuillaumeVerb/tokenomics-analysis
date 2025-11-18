@@ -38,6 +38,53 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Initialiser le thème
+if 'theme' not in st.session_state:
+    st.session_state['theme'] = 'dark'
+
+# Appliquer le CSS selon le thème
+if st.session_state['theme'] == 'light':
+    st.markdown("""
+    <style>
+        .stApp {
+            background-color: #ffffff;
+            color: #000000;
+        }
+        .stSidebar {
+            background-color: #f0f2f6;
+        }
+        h1, h2, h3 {
+            color: #1f1f1f !important;
+        }
+        .stMetric {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+        }
+        .stExpander {
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+else:
+    st.markdown("""
+    <style>
+        .stApp {
+            background-color: #0e1117;
+            color: #fafafa;
+        }
+        .stSidebar {
+            background-color: #1e1e1e;
+        }
+        .stMetric {
+            background-color: #1e1e1e;
+            border-radius: 10px;
+            padding: 15px;
+        }
+    </style>
+    """, unsafe_allow_html=True)
+
 
 def init_session_state():
     """Initialise les variables de session."""
@@ -406,14 +453,159 @@ def render_manual_analysis():
         render_analysis_results(params, selected_scenario)
 
 
+def generate_export_html(params: Dict[str, Any], score_data: Dict[str, Any], recommendations: list) -> str:
+    """Génère un HTML pour export/impression PDF."""
+    token_name = params.get('name', 'Token')
+    
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <title>Tokenomics Analysis - {token_name}</title>
+        <style>
+            body {{ font-family: Arial, sans-serif; margin: 40px; }}
+            h1 {{ color: #6366f1; }}
+            h2 {{ color: #4338ca; margin-top: 30px; }}
+            .score {{ font-size: 48px; font-weight: bold; color: #10b981; }}
+            .metric {{ display: inline-block; margin: 10px 20px; }}
+            .metric-label {{ font-weight: bold; }}
+            table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
+            th, td {{ border: 1px solid #ddd; padding: 12px; text-align: left; }}
+            th {{ background-color: #6366f1; color: white; }}
+            .recommendation {{ margin: 10px 0; padding: 10px; background: #f3f4f6; border-radius: 5px; }}
+            @media print {{ body {{ margin: 20px; }} }}
+        </style>
+    </head>
+    <body>
+        <h1>🪙 Tokenomics Analysis Report</h1>
+        <h2>{token_name} ({params.get('symbol', 'N/A')})</h2>
+        <p><strong>Date:</strong> {__import__('datetime').datetime.now().strftime('%Y-%m-%d %H:%M')}</p>
+        
+        <h2>📊 Score Final</h2>
+        <div class="score">{score_data['final_score']}/100</div>
+        <p><strong>Verdict:</strong> {score_data['verdict']}</p>
+        
+        <h2>📈 Métriques Principales</h2>
+        <div class="metric">
+            <div class="metric-label">Prix:</div>
+            ${params.get('price_usd', 0):,.2f}
+        </div>
+        <div class="metric">
+            <div class="metric-label">Market Cap:</div>
+            ${params.get('market_cap_usd', 0):,.0f}
+        </div>
+        <div class="metric">
+            <div class="metric-label">Circulating Supply:</div>
+            {params['circulating_supply']:,.0f}
+        </div>
+        <div class="metric">
+            <div class="metric-label">Max Supply:</div>
+            {'Illimité' if params['max_supply'] == 0 else f"{params['max_supply']:,.0f}"}
+        </div>
+        
+        <h2>🎯 Scores Détaillés</h2>
+        <table>
+            <tr>
+                <th>Composante</th>
+                <th>Score</th>
+                <th>Pondération</th>
+                <th>Commentaire</th>
+            </tr>
+            <tr>
+                <td>Inflation</td>
+                <td>{score_data['inflation_score']:.1f}/100</td>
+                <td>{score_data['weights']['inflation']*100:.0f}%</td>
+                <td>{score_data['inflation_comment']}</td>
+            </tr>
+            <tr>
+                <td>Distribution</td>
+                <td>{score_data['distribution_score']:.1f}/100</td>
+                <td>{score_data['weights']['distribution']*100:.0f}%</td>
+                <td>{score_data['distribution_comment']}</td>
+            </tr>
+            <tr>
+                <td>Utilité</td>
+                <td>{score_data['utility_score']:.1f}/100</td>
+                <td>{score_data['weights']['utility']*100:.0f}%</td>
+                <td>{score_data['utility_comment']}</td>
+            </tr>
+            <tr>
+                <td>Gouvernance</td>
+                <td>{score_data['governance_score']:.1f}/100</td>
+                <td>{score_data['weights']['governance']*100:.0f}%</td>
+                <td>{score_data['governance_comment']}</td>
+            </tr>
+            <tr>
+                <td>Incitations</td>
+                <td>{score_data['incentives_score']:.1f}/100</td>
+                <td>{score_data['weights']['incentives']*100:.0f}%</td>
+                <td>{score_data['incentives_comment']}</td>
+            </tr>
+        </table>
+        
+        <h2>💡 Recommandations</h2>
+        {''.join([f'<div class="recommendation">{rec}</div>' for rec in recommendations])}
+        
+        <hr style="margin-top: 50px;">
+        <p style="text-align: center; color: gray;">
+            Généré par <strong>Tokenomics Analyzer</strong> | 
+            <a href="https://github.com/GuillaumeVerb/tokenomics-analysis">GitHub</a>
+        </p>
+        <p style="text-align: center; color: gray; font-size: 12px;">
+            ⚠️ Cet outil est fourni à titre éducatif. Pas de conseil en investissement. DYOR.
+        </p>
+    </body>
+    </html>
+    """
+    return html
+
+
 def render_analysis_results(params: Dict[str, Any], scenario_name: str = None):
     """Affiche les résultats de l'analyse."""
     st.divider()
-    st.header("📊 Résultats de l'Analyse")
+    
+    # Bouton d'export en haut
+    col_header1, col_header2 = st.columns([3, 1])
+    with col_header1:
+        st.header("📊 Résultats de l'Analyse")
     
     # Calcul du score
     score_data = calculate_viability_index(params)
     recommendations = get_recommendations(score_data)
+    
+    # Ajouter à l'historique
+    if 'history' not in st.session_state:
+        st.session_state['history'] = []
+    
+    import datetime
+    history_entry = {
+        'name': params.get('name', 'Token'),
+        'symbol': params.get('symbol', 'N/A'),
+        'score': score_data['final_score'],
+        'time': datetime.datetime.now().strftime('%H:%M'),
+        'params': params
+    }
+    
+    # Éviter les doublons (même token dans les 2 dernières entrées)
+    if not st.session_state['history'] or st.session_state['history'][-1]['symbol'] != history_entry['symbol']:
+        st.session_state['history'].append(history_entry)
+    
+    # Limiter à 20 entrées max
+    if len(st.session_state['history']) > 20:
+        st.session_state['history'] = st.session_state['history'][-20:]
+    
+    # Bouton d'export
+    with col_header2:
+        html_export = generate_export_html(params, score_data, recommendations)
+        st.download_button(
+            label="📥 Export PDF",
+            data=html_export,
+            file_name=f"tokenomics_{params.get('symbol', 'token')}_{__import__('datetime').datetime.now().strftime('%Y%m%d')}.html",
+            mime="text/html",
+            help="Téléchargez le rapport (ouvrez le fichier HTML et imprimez en PDF)",
+            use_container_width=True
+        )
     
     # Score final (grande jauge)
     st.subheader("🎯 Score Final")
@@ -489,6 +681,134 @@ def render_analysis_results(params: Dict[str, Any], scenario_name: str = None):
             st.markdown(f"- {rec}")
     else:
         st.success("✅ Aucune recommandation spécifique. La tokenomics semble bien équilibrée.")
+
+
+def render_comparison_mode():
+    """Affiche le mode de comparaison de 2 tokens."""
+    st.header("⚖️ Mode Comparaison")
+    st.markdown("Comparez la tokenomics de 2 projets côte à côte.")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.subheader("🅰️ Token A")
+        token_a = st.text_input("Token A", placeholder="bitcoin, eth, sol...", key="token_a")
+        analyze_a = st.button("Analyser A", key="btn_a", type="primary", use_container_width=True)
+    
+    with col2:
+        st.subheader("🅱️ Token B")
+        token_b = st.text_input("Token B", placeholder="ethereum, btc, ada...", key="token_b")
+        analyze_b = st.button("Analyser B", key="btn_b", type="primary", use_container_width=True)
+    
+    # Analyser Token A
+    if analyze_a and token_a:
+        with col1:
+            with st.spinner(f"Analyse de {token_a}..."):
+                data_a = fetch_coingecko_data(token_a)
+                if data_a:
+                    params_a = parse_coingecko_to_params(data_a)
+                    params_a = enhance_params_with_known_data(params_a, token_a.lower())
+                    st.session_state['comparison_a'] = params_a
+                    st.success(f"✅ {params_a['name']} chargé")
+                else:
+                    st.error(f"❌ {token_a} non trouvé")
+    
+    # Analyser Token B
+    if analyze_b and token_b:
+        with col2:
+            with st.spinner(f"Analyse de {token_b}..."):
+                data_b = fetch_coingecko_data(token_b)
+                if data_b:
+                    params_b = parse_coingecko_to_params(data_b)
+                    params_b = enhance_params_with_known_data(params_b, token_b.lower())
+                    st.session_state['comparison_b'] = params_b
+                    st.success(f"✅ {params_b['name']} chargé")
+                else:
+                    st.error(f"❌ {token_b} non trouvé")
+    
+    # Si les deux tokens sont chargés, afficher la comparaison
+    if 'comparison_a' in st.session_state and 'comparison_b' in st.session_state:
+        st.divider()
+        st.header("📊 Comparaison des Scores")
+        
+        params_a = st.session_state['comparison_a']
+        params_b = st.session_state['comparison_b']
+        
+        score_a = calculate_viability_index(params_a)
+        score_b = calculate_viability_index(params_b)
+        
+        # Scores finaux
+        col1, col2 = st.columns(2)
+        with col1:
+            st.metric(
+                f"🅰️ {params_a['name']}",
+                f"{score_a['final_score']:.1f}/100",
+                delta=None
+            )
+        with col2:
+            st.metric(
+                f"🅱️ {params_b['name']}",
+                f"{score_b['final_score']:.1f}/100",
+                delta=f"{score_b['final_score'] - score_a['final_score']:+.1f}"
+            )
+        
+        # Tableau comparatif
+        st.subheader("Comparaison Détaillée")
+        
+        comparison_data = {
+            "Composante": ["Inflation", "Distribution", "Utilité", "Gouvernance", "Incitations", "**TOTAL**"],
+            f"🅰️ {params_a['name']}": [
+                f"{score_a['inflation_score']:.1f}",
+                f"{score_a['distribution_score']:.1f}",
+                f"{score_a['utility_score']:.1f}",
+                f"{score_a['governance_score']:.1f}",
+                f"{score_a['incentives_score']:.1f}",
+                f"**{score_a['final_score']:.1f}**"
+            ],
+            f"🅱️ {params_b['name']}": [
+                f"{score_b['inflation_score']:.1f}",
+                f"{score_b['distribution_score']:.1f}",
+                f"{score_b['utility_score']:.1f}",
+                f"{score_b['governance_score']:.1f}",
+                f"{score_b['incentives_score']:.1f}",
+                f"**{score_b['final_score']:.1f}**"
+            ],
+            "Différence": [
+                f"{score_b['inflation_score'] - score_a['inflation_score']:+.1f}",
+                f"{score_b['distribution_score'] - score_a['distribution_score']:+.1f}",
+                f"{score_b['utility_score'] - score_a['utility_score']:+.1f}",
+                f"{score_b['governance_score'] - score_a['governance_score']:+.1f}",
+                f"{score_b['incentives_score'] - score_a['incentives_score']:+.1f}",
+                f"**{score_b['final_score'] - score_a['final_score']:+.1f}**"
+            ]
+        }
+        
+        import pandas as pd
+        df = pd.DataFrame(comparison_data)
+        st.dataframe(df, use_container_width=True, hide_index=True)
+        
+        # Métriques supply
+        st.subheader("📈 Supply & Inflation")
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.markdown("**🅰️**")
+            st.metric("Circulating", f"{params_a['circulating_supply']:,.0f}")
+            st.metric("Inflation", f"{params_a['inflation_rate']:.1f}%")
+        
+        with col2:
+            st.markdown("**🅱️**")
+            st.metric("Circulating", f"{params_b['circulating_supply']:,.0f}")
+            st.metric("Inflation", f"{params_b['inflation_rate']:.1f}%")
+        
+        with col3:
+            st.markdown("**Gagnant**")
+            if score_a['inflation_score'] > score_b['inflation_score']:
+                st.success(f"🅰️ {params_a['name']}")
+            elif score_b['inflation_score'] > score_a['inflation_score']:
+                st.success(f"🅱️ {params_b['name']}")
+            else:
+                st.info("Égalité")
 
 
 def render_methodology():
@@ -583,11 +903,24 @@ def main():
     # Sidebar pour navigation
     with st.sidebar:
         st.image("https://via.placeholder.com/150x150.png?text=Logo", width=150)
-        st.title("Navigation")
+        
+        # Toggle thème
+        col1, col2 = st.columns([2, 1])
+        with col1:
+            st.title("Navigation")
+        with col2:
+            # Initialiser le thème
+            if 'theme' not in st.session_state:
+                st.session_state['theme'] = 'dark'
+            
+            # Bouton toggle
+            if st.button("🌓", help="Changer le thème", key="theme_toggle"):
+                st.session_state['theme'] = 'light' if st.session_state['theme'] == 'dark' else 'dark'
+                st.rerun()
         
         mode = st.radio(
             "Mode d'analyse",
-            ["⚡ Analyse Rapide (CoinGecko)", "🔧 Analyse Manuelle", "📚 Méthodologie"],
+            ["⚡ Analyse Rapide (CoinGecko)", "🔧 Analyse Manuelle", "⚖️ Comparaison", "📚 Méthodologie"],
             index=0
         )
         
@@ -599,6 +932,23 @@ def main():
         
         Développé par Guillaume Verbiguié.
         """)
+        
+        st.divider()
+        
+        # Historique des analyses
+        if 'history' in st.session_state and st.session_state['history']:
+            st.divider()
+            st.markdown("### 📝 Historique")
+            with st.expander("Dernières analyses", expanded=False):
+                for i, entry in enumerate(reversed(st.session_state['history'][-5:])):
+                    col1, col2 = st.columns([3, 1])
+                    with col1:
+                        st.markdown(f"**{entry['name']}** ({entry['symbol']})")
+                        st.caption(f"Score: {entry['score']:.1f}/100 • {entry['time']}")
+                    with col2:
+                        if st.button("🔄", key=f"reload_{i}", help="Recharger"):
+                            st.session_state.analysis_params = entry['params']
+                            st.rerun()
         
         st.divider()
         
@@ -615,6 +965,8 @@ def main():
         render_quick_analysis()
     elif mode == "🔧 Analyse Manuelle":
         render_manual_analysis()
+    elif mode == "⚖️ Comparaison":
+        render_comparison_mode()
     else:
         render_methodology()
     
