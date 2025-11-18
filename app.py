@@ -20,7 +20,8 @@ from tokenomics.api import (
     fetch_coingecko_data,
     parse_coingecko_to_params,
     enhance_params_with_known_data,
-    search_coingecko_coin
+    search_coingecko_coin,
+    get_enriched_tokens_list
 )
 from tokenomics.visualizations import (
     create_supply_distribution_chart,
@@ -815,6 +816,26 @@ def render_comparison_mode():
 def render_methodology():
     """Affiche la section méthodologie."""
     st.header("📚 Méthodologie & Limites")
+    
+    # Liste des tokens enrichis
+    with st.expander("✅ **Liste des 60+ Tokens Enrichis** (données réelles)", expanded=False):
+        st.markdown("""
+        Ces tokens disposent de **vraies données** collectées manuellement (concentration réelle, allocations confirmées, utilités vérifiées).
+        
+        Les autres tokens utilisent des **heuristiques automatiques** basées sur le market cap rank et le supply ratio.
+        """)
+        
+        enriched_tokens = get_enriched_tokens_list()
+        
+        for category, tokens in enriched_tokens.items():
+            st.markdown(f"### {category}")
+            cols = st.columns(3)
+            for i, token in enumerate(tokens):
+                with cols[i % 3]:
+                    token_display = token.replace('-', ' ').title()
+                    st.markdown(f"- `{token}`")
+        
+        st.info(f"**Total : {sum(len(tokens) for tokens in enriched_tokens.values())} tokens enrichis** 🎉")
     
     with st.expander("🔍 **Comment est calculé le Tokenomics Viability Index ?**"):
         st.markdown("""

@@ -537,6 +537,263 @@ def enhance_params_with_known_data(params: Dict[str, Any], coin_id: str) -> Dict
             'team_allocation': 12.0,
             'top_10_concentration': 28.0,
         },
+        
+        # Plus de L1/L2
+        'tron': {
+            'utility_gas': True,
+            'utility_staking': True,
+            'incentive_staking': True,
+            'top_10_concentration': 45.0,
+            'team_allocation': 20.0,
+            'vesting_years': 10,
+        },
+        'near': {
+            'utility_gas': True,
+            'utility_staking': True,
+            'utility_governance': True,
+            'incentive_staking': True,
+            'gov_dao_active': True,
+            'top_10_concentration': 32.0,
+            'team_allocation': 17.0,
+            'vesting_years': 5,
+        },
+        'aptos': {
+            'utility_gas': True,
+            'utility_staking': True,
+            'incentive_staking': True,
+            'top_10_concentration': 51.0,
+            'team_allocation': 51.0,
+            'vesting_years': 10,
+        },
+        'sui': {
+            'utility_gas': True,
+            'utility_staking': True,
+            'incentive_staking': True,
+            'top_10_concentration': 50.0,
+            'team_allocation': 50.0,
+            'vesting_years': 10,
+        },
+        'cosmos': {
+            'utility_gas': True,
+            'utility_staking': True,
+            'utility_governance': True,
+            'incentive_staking': True,
+            'gov_dao_active': True,
+            'top_10_concentration': 28.0,
+            'team_allocation': 10.0,
+        },
+        'fantom': {
+            'utility_gas': True,
+            'utility_staking': True,
+            'incentive_staking': True,
+            'top_10_concentration': 38.0,
+            'team_allocation': 15.0,
+        },
+        'algorand': {
+            'utility_gas': True,
+            'utility_staking': True,
+            'utility_governance': True,
+            'incentive_staking': True,
+            'gov_dao_active': True,
+            'top_10_concentration': 25.0,
+            'team_allocation': 25.0,
+            'vesting_years': 10,
+        },
+        
+        # Plus de DeFi
+        'frax-share': {
+            'utility_governance': True,
+            'utility_staking': True,
+            'utility_discount': True,
+            'incentive_staking': True,
+            'incentive_burn': True,
+            'burn_rate': 0.3,
+            'gov_dao_active': True,
+            'top_10_concentration': 35.0,
+            'team_allocation': 20.0,
+        },
+        'convex-finance': {
+            'utility_governance': True,
+            'utility_staking': True,
+            'incentive_lock': True,
+            'incentive_staking': True,
+            'lock_duration_months': 16,
+            'gov_dao_active': True,
+            'top_10_concentration': 28.0,
+            'team_allocation': 9.7,
+        },
+        'gmx': {
+            'utility_governance': True,
+            'utility_staking': True,
+            'utility_discount': True,
+            'incentive_staking': True,
+            'incentive_burn': True,
+            'burn_rate': 0.4,
+            'gov_dao_active': True,
+            'top_10_concentration': 35.0,
+            'team_allocation': 15.0,
+        },
+        'synthetix-network-token': {
+            'utility_governance': True,
+            'utility_staking': True,
+            'utility_collateral': True,
+            'incentive_staking': True,
+            'gov_dao_active': True,
+            'top_10_concentration': 42.0,
+            'team_allocation': 20.0,
+        },
+        'balancer': {
+            'utility_governance': True,
+            'utility_discount': True,
+            'gov_dao_active': True,
+            'gov_timelock': True,
+            'top_10_concentration': 38.0,
+            'team_allocation': 25.0,
+            'vesting_years': 4,
+        },
+        'yearn-finance': {
+            'utility_governance': True,
+            'utility_staking': True,
+            'incentive_staking': True,
+            'incentive_burn': True,
+            'burn_rate': 0.2,
+            'gov_dao_active': True,
+            'top_10_concentration': 32.0,
+            'team_allocation': 0.0,
+        },
+        
+        # Liquid Staking supplémentaires
+        'staked-ether': {
+            'utility_staking': False,
+            'utility_collateral': True,
+            'top_10_concentration': 85.0,
+            'team_allocation': 0.0,
+            'gov_timelock': False,
+            'gov_multisig': False,
+            'gov_dao_active': False,
+        },
+        'frax-ether': {
+            'utility_collateral': True,
+            'utility_governance': False,
+            'top_10_concentration': 90.0,
+            'team_allocation': 0.0,
+        },
+        
+        # AI Tokens
+        'render-token': {
+            'utility_governance': True,
+            'utility_gas': True,
+            'incentive_burn': True,
+            'burn_rate': 0.5,
+            'gov_dao_active': False,
+            'top_10_concentration': 45.0,
+            'team_allocation': 25.0,
+        },
+        'fetch-ai': {
+            'utility_gas': True,
+            'utility_staking': True,
+            'utility_governance': True,
+            'incentive_staking': True,
+            'gov_dao_active': True,
+            'top_10_concentration': 35.0,
+            'team_allocation': 30.0,
+            'vesting_years': 10,
+        },
+        'singularitynet': {
+            'utility_governance': True,
+            'utility_staking': True,
+            'gov_dao_active': True,
+            'top_10_concentration': 38.0,
+            'team_allocation': 28.0,
+        },
+        
+        # Oracle supplémentaires
+        'band-protocol': {
+            'utility_gas': True,
+            'utility_staking': True,
+            'utility_governance': True,
+            'incentive_staking': True,
+            'gov_dao_active': True,
+            'top_10_concentration': 42.0,
+            'team_allocation': 22.0,
+        },
+        
+        # Privacy
+        'monero': {
+            'utility_gas': True,
+            'team_allocation': 0.0,
+            'top_10_concentration': 20.0,
+            'gov_timelock': False,
+            'gov_multisig': False,
+            'gov_dao_active': False,
+        },
+        'zcash': {
+            'utility_gas': True,
+            'team_allocation': 20.0,
+            'top_10_concentration': 25.0,
+            'vesting_years': 4,
+            'gov_timelock': False,
+            'gov_multisig': True,
+            'gov_dao_active': False,
+        },
+        
+        # Exchange Tokens
+        'okb': {
+            'utility_discount': True,
+            'utility_staking': True,
+            'incentive_burn': True,
+            'incentive_staking': True,
+            'burn_rate': 1.0,
+            'top_10_concentration': 60.0,
+            'team_allocation': 40.0,
+            'gov_timelock': False,
+            'gov_multisig': True,
+            'gov_dao_active': False,
+        },
+        'kucoin-shares': {
+            'utility_discount': True,
+            'utility_staking': False,
+            'incentive_burn': True,
+            'burn_rate': 0.8,
+            'top_10_concentration': 55.0,
+            'team_allocation': 35.0,
+            'gov_timelock': False,
+            'gov_multisig': True,
+            'gov_dao_active': False,
+        },
+        
+        # Gaming supplémentaires
+        'immutable-x': {
+            'utility_gas': True,
+            'utility_staking': True,
+            'utility_governance': True,
+            'incentive_staking': True,
+            'gov_dao_active': False,
+            'top_10_concentration': 48.0,
+            'team_allocation': 51.7,
+            'vesting_years': 4,
+        },
+        'gala': {
+            'utility_governance': True,
+            'utility_discount': True,
+            'incentive_burn': True,
+            'burn_rate': 0.5,
+            'gov_dao_active': False,
+            'top_10_concentration': 45.0,
+            'team_allocation': 20.0,
+        },
+        
+        # Bridges
+        'wormhole': {
+            'utility_governance': True,
+            'utility_staking': True,
+            'gov_timelock': True,
+            'gov_multisig': True,
+            'gov_dao_active': True,
+            'top_10_concentration': 52.0,
+            'team_allocation': 47.0,
+            'vesting_years': 4,
+        },
     }
     
     if coin_id in known_tokens:
@@ -547,4 +804,52 @@ def enhance_params_with_known_data(params: Dict[str, Any], coin_id: str) -> Dict
         params['is_enriched'] = False
     
     return params
+
+
+def get_enriched_tokens_list() -> Dict[str, list]:
+    """
+    Retourne la liste organisée de tous les tokens enrichis.
+    
+    Returns:
+        Dictionnaire avec les catégories de tokens
+    """
+    return {
+        "🔷 Layer 1 Blockchains": [
+            "bitcoin", "ethereum", "solana", "cardano", "avalanche-2", 
+            "polkadot", "tron", "near", "aptos", "sui", "cosmos", 
+            "fantom", "algorand"
+        ],
+        "🔶 Layer 2 Solutions": [
+            "arbitrum", "optimism", "matic-network"
+        ],
+        "💰 DeFi Protocols": [
+            "uniswap", "curve-dao-token", "aave", "maker", "compound-governance-token",
+            "sushi", "pancakeswap-token", "1inch", "frax-share", "convex-finance",
+            "gmx", "synthetix-network-token", "balancer", "yearn-finance", "pendle"
+        ],
+        "🏦 Liquid Staking": [
+            "lido-dao", "rocket-pool", "staked-ether", "frax-ether"
+        ],
+        "🔮 Oracle Networks": [
+            "chainlink", "band-protocol"
+        ],
+        "🎮 Gaming & Metaverse": [
+            "the-sandbox", "axie-infinity", "decentraland", "immutable-x", "gala"
+        ],
+        "🤖 AI & Data": [
+            "render-token", "fetch-ai", "singularitynet"
+        ],
+        "🐕 Memecoins": [
+            "dogecoin", "shiba-inu"
+        ],
+        "🔒 Privacy Coins": [
+            "monero", "zcash"
+        ],
+        "🏪 Exchange Tokens": [
+            "okb", "kucoin-shares"
+        ],
+        "🌉 Bridge Protocols": [
+            "wormhole"
+        ]
+    }
 
