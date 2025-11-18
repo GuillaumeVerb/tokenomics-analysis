@@ -15,25 +15,45 @@ L'analyse produit un **Tokenomics Viability Index** (0–100) et des visualisati
 
 ## 📊 Fonctionnalités
 
-### 1. Mode Analyse Rapide (CoinGecko)
+### 1. ⚡ Mode Analyse Rapide (CoinGecko)
+- **Recherche intelligente** : accepte symboles (BTC, ETH, SOL) ou noms complets
+- **Boutons rapides** : Bitcoin, Ethereum, Solana, BNB, Cardano, Avalanche
+- **27 tokens enrichis** : données réelles pour les cryptos populaires (L1, L2, DeFi, Gaming, Memecoins)
+- **Suggestions automatiques** : si un token n'est pas trouvé
+- **Badge qualité** : indique si les données sont enrichies ou estimées
 - Import automatique des données via l'API CoinGecko
-- Analyse instantanée des métriques clés
 - Visualisations de distribution de supply
 
-### 2. Mode Analyse Manuelle Avancée
+### 2. 🔧 Mode Analyse Manuelle Avancée
 - Configuration personnalisée de tous les paramètres
-- 18 scénarios préconfigurés :
+- **18 scénarios préconfigurés** :
   - **10 scénarios structurels** (early-stage, ETH-like, Curve-like, Pendle-like, Hyperliquid, meme coins, RWA, etc.)
   - **8 scénarios inflationnistes** (2%, 5%, 10%, 20%, décroissante, halving, seasonal, burn)
 - Projection de dilution sur 5 ans
 - Analyse approfondie de chaque composante
 
-### 3. Visualisations
+### 3. ⚖️ Mode Comparaison
+- **Comparez 2 tokens côte à côte**
+- Tableau comparatif des scores détaillés
+- Différences calculées automatiquement
+- Visualisation des gagnants par catégorie
+
+### 4. 📥 Export & Historique
+- **Export PDF** : téléchargez un rapport complet en HTML (imprimez en PDF)
+- **Historique** : consultez les 5 dernières analyses dans la sidebar
+- Rechargement rapide des analyses précédentes
+
+### 5. 🌓 Thème Personnalisable
+- **Toggle mode sombre/clair**
+- Interface adaptée à vos préférences
+
+### 6. 📊 Visualisations
 - Camembert de distribution de supply
 - Projection de dilution temporelle
 - Scores détaillés par catégorie
+- Jauge de score final
 
-### 4. Méthodologie Transparente
+### 7. 📚 Méthodologie Transparente
 - Explication des formules de scoring
 - Limites et hypothèses
 - Sources et références
