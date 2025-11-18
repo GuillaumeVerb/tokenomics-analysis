@@ -74,17 +74,45 @@ def render_quick_analysis():
     st.header("⚡ Mode Analyse Rapide")
     st.markdown("Importez automatiquement les données depuis CoinGecko.")
     
+    # Boutons rapides pour tokens populaires
+    st.markdown("**🔥 Tokens populaires :**")
+    col1, col2, col3, col4, col5, col6 = st.columns(6)
+    
+    quick_tokens = [
+        ("Bitcoin", "btc", col1),
+        ("Ethereum", "eth", col2),
+        ("Solana", "sol", col3),
+        ("BNB", "bnb", col4),
+        ("Cardano", "ada", col5),
+        ("Avalanche", "avax", col6),
+    ]
+    
+    selected_quick_token = None
+    for name, symbol, column in quick_tokens:
+        with column:
+            if st.button(f"₿ {name}", key=f"quick_{symbol}", use_container_width=True):
+                selected_quick_token = symbol
+    
+    st.divider()
+    
+    # Champ de recherche manuel
     col1, col2 = st.columns([3, 1])
     
     with col1:
         coin_input = st.text_input(
-            "Nom ou symbole du token",
-            placeholder="ethereum, bitcoin, uniswap...",
-            help="Entrez le nom ou symbole du token (CoinGecko ID)"
+            "Ou entrez un nom/symbole",
+            placeholder="BTC, ETH, SOL, uniswap, aave...",
+            help="Accepte les symboles (BTC, ETH) ou noms complets (bitcoin, ethereum)",
+            value=selected_quick_token if selected_quick_token else ""
         )
     
     with col2:
         analyze_button = st.button("🔍 Analyser", type="primary", use_container_width=True)
+    
+    # Si bouton rapide cliqué, analyser automatiquement
+    if selected_quick_token:
+        coin_input = selected_quick_token
+        analyze_button = True
     
     if analyze_button and coin_input:
         with st.spinner(f"Récupération des données pour '{coin_input}'..."):
@@ -111,7 +139,12 @@ def render_quick_analysis():
                     else:
                         st.metric("Max Supply", "Illimité")
                 
-                st.info(f"ℹ️ {params['description']}")
+                # Badge de qualité des données
+                if "Données enrichies" in params['description']:
+                    st.success(f"✅ **Données enrichies disponibles** | {params['description'].split('|')[0]}")
+                else:
+                    st.info(f"ℹ️ {params['description']}")
+                    st.warning("⚠️ Paramètres qualitatifs estimés. Ajustez manuellement dans le mode analyse manuelle pour plus de précision.")
                 
                 # Stocker dans la session
                 st.session_state.analysis_params = params
@@ -120,15 +153,35 @@ def render_quick_analysis():
                 render_analysis_results(params, coin_input.lower())
                 
             else:
-                st.error(f"❌ Token '{coin_input}' non trouvé. Vérifiez l'orthographe ou essayez un autre nom.")
+                st.error(f"❌ Token '{coin_input}' non trouvé sur CoinGecko.")
                 
-                # Suggestion de recherche
+                # Suggestions intelligentes
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    st.info("""
+                    **💡 Essayez avec :**
+                    - Un **symbole** : BTC, ETH, SOL, UNI
+                    - Un **nom complet** : bitcoin, ethereum, solana
+                    - L'**ID CoinGecko** exact : curve-dao-token
+                    """)
+                
+                with col2:
+                    st.success("""
+                    **✅ Tokens populaires qui fonctionnent :**
+                    - Bitcoin (`btc` ou `bitcoin`)
+                    - Ethereum (`eth` ou `ethereum`)
+                    - Uniswap (`uni` ou `uniswap`)
+                    - Aave (`aave`)
+                    """)
+                
+                # Recherche de tokens similaires
                 with st.spinner("Recherche de tokens similaires..."):
                     results = search_coingecko_coin(coin_input)
                     if results:
-                        st.write("**Tokens similaires trouvés :**")
+                        st.write("**🔍 Tokens similaires trouvés :**")
                         for result in results[:5]:
-                            st.write(f"- **{result['name']}** ({result['symbol']}) - ID: `{result['id']}`")
+                            st.write(f"- **{result['name']}** ({result['symbol'].upper()}) → essayez `{result['id']}`")
 
 
 def render_manual_analysis():

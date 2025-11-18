@@ -6,16 +6,91 @@ import requests
 from typing import Dict, Any, Optional
 
 
+# Mapping des symboles populaires vers les IDs CoinGecko
+SYMBOL_TO_ID = {
+    # Top cryptos
+    'btc': 'bitcoin',
+    'eth': 'ethereum',
+    'usdt': 'tether',
+    'bnb': 'binancecoin',
+    'sol': 'solana',
+    'xrp': 'ripple',
+    'usdc': 'usd-coin',
+    'ada': 'cardano',
+    'avax': 'avalanche-2',
+    'doge': 'dogecoin',
+    'trx': 'tron',
+    'dot': 'polkadot',
+    'matic': 'matic-network',
+    'link': 'chainlink',
+    'wbtc': 'wrapped-bitcoin',
+    'shib': 'shiba-inu',
+    'dai': 'dai',
+    'uni': 'uniswap',
+    'atom': 'cosmos',
+    'etc': 'ethereum-classic',
+    'ltc': 'litecoin',
+    'bch': 'bitcoin-cash',
+    'xlm': 'stellar',
+    'near': 'near',
+    'apt': 'aptos',
+    'arb': 'arbitrum',
+    'op': 'optimism',
+    'vet': 'vechain',
+    'algo': 'algorand',
+    'fil': 'filecoin',
+    'icp': 'internet-computer',
+    'inj': 'injective-protocol',
+    'mkr': 'maker',
+    'aave': 'aave',
+    'crv': 'curve-dao-token',
+    'snx': 'havven',
+    'comp': 'compound-governance-token',
+    'sushi': 'sushi',
+    '1inch': '1inch',
+    'grt': 'the-graph',
+    'axs': 'axie-infinity',
+    'sand': 'the-sandbox',
+    'mana': 'decentraland',
+    'ftm': 'fantom',
+    'hbar': 'hedera-hashgraph',
+}
+
+
+def normalize_coin_input(user_input: str) -> str:
+    """
+    Normalise l'entrée utilisateur (symbole ou nom) vers un ID CoinGecko.
+    
+    Args:
+        user_input: Input utilisateur (peut être un symbole ou un nom)
+        
+    Returns:
+        ID CoinGecko normalisé
+    """
+    # Convertir en minuscules et enlever les espaces
+    normalized = user_input.lower().strip()
+    
+    # Si c'est un symbole connu, convertir vers l'ID
+    if normalized in SYMBOL_TO_ID:
+        return SYMBOL_TO_ID[normalized]
+    
+    # Sinon retourner tel quel (peut être déjà un ID CoinGecko)
+    return normalized
+
+
 def fetch_coingecko_data(coin_id: str) -> Optional[Dict[str, Any]]:
     """
     Récupère les données d'un token depuis l'API CoinGecko.
     
     Args:
-        coin_id: Identifiant CoinGecko du token (ex: "ethereum", "bitcoin")
+        coin_id: Identifiant CoinGecko du token (ex: "ethereum", "bitcoin") ou symbole (ex: "ETH", "BTC")
         
     Returns:
         Dictionnaire avec les données ou None si erreur
     """
+    # Normaliser l'input (gérer les symboles)
+    coin_id = normalize_coin_input(coin_id)
+    
     try:
         url = f"https://api.coingecko.com/api/v3/coins/{coin_id}"
         params = {
@@ -165,8 +240,9 @@ def enhance_params_with_known_data(params: Dict[str, Any], coin_id: str) -> Dict
     Returns:
         Paramètres enrichis
     """
-    # Base de données simplifiée de tokens connus
+    # Base de données enrichie de tokens connus avec vraies données
     known_tokens = {
+        # Layer 1
         'ethereum': {
             'utility_gas': True,
             'utility_staking': True,
@@ -187,6 +263,72 @@ def enhance_params_with_known_data(params: Dict[str, Any], coin_id: str) -> Dict
             'gov_multisig': False,
             'gov_dao_active': False,
         },
+        'solana': {
+            'utility_gas': True,
+            'utility_staking': True,
+            'utility_governance': False,
+            'incentive_staking': True,
+            'top_10_concentration': 32.0,
+            'team_allocation': 12.5,
+            'vesting_years': 4,
+        },
+        'cardano': {
+            'utility_gas': True,
+            'utility_staking': True,
+            'utility_governance': True,
+            'incentive_staking': True,
+            'gov_dao_active': True,
+            'top_10_concentration': 28.0,
+            'team_allocation': 16.0,
+        },
+        'avalanche-2': {
+            'utility_gas': True,
+            'utility_staking': True,
+            'incentive_staking': True,
+            'top_10_concentration': 35.0,
+            'team_allocation': 18.0,
+            'vesting_years': 4,
+        },
+        'polkadot': {
+            'utility_gas': True,
+            'utility_staking': True,
+            'utility_governance': True,
+            'incentive_staking': True,
+            'gov_dao_active': True,
+            'top_10_concentration': 38.0,
+            'team_allocation': 20.0,
+        },
+        
+        # Layer 2
+        'arbitrum': {
+            'utility_gas': True,
+            'utility_governance': True,
+            'gov_timelock': True,
+            'gov_dao_active': True,
+            'team_allocation': 26.9,
+            'vesting_years': 4,
+            'top_10_concentration': 42.0,
+        },
+        'optimism': {
+            'utility_gas': True,
+            'utility_governance': True,
+            'gov_timelock': True,
+            'gov_dao_active': True,
+            'team_allocation': 25.0,
+            'vesting_years': 4,
+            'top_10_concentration': 40.0,
+        },
+        'matic-network': {
+            'utility_gas': True,
+            'utility_staking': True,
+            'utility_governance': True,
+            'incentive_staking': True,
+            'gov_dao_active': True,
+            'top_10_concentration': 33.0,
+            'team_allocation': 16.0,
+        },
+        
+        # DeFi
         'uniswap': {
             'utility_governance': True,
             'utility_staking': False,
@@ -217,7 +359,140 @@ def enhance_params_with_known_data(params: Dict[str, Any], coin_id: str) -> Dict
             'gov_dao_active': True,
             'team_allocation': 23.0,
             'top_10_concentration': 32.0,
-        }
+        },
+        'maker': {
+            'utility_governance': True,
+            'utility_staking': False,
+            'utility_collateral': True,
+            'incentive_burn': True,
+            'burn_rate': 0.5,
+            'gov_timelock': True,
+            'gov_dao_active': True,
+            'team_allocation': 0.0,
+            'top_10_concentration': 22.0,
+        },
+        'compound-governance-token': {
+            'utility_governance': True,
+            'gov_timelock': True,
+            'gov_dao_active': True,
+            'team_allocation': 24.0,
+            'vesting_years': 4,
+            'top_10_concentration': 38.0,
+        },
+        'sushi': {
+            'utility_governance': True,
+            'utility_staking': True,
+            'utility_discount': True,
+            'incentive_staking': True,
+            'gov_dao_active': True,
+            'top_10_concentration': 30.0,
+            'team_allocation': 10.0,
+        },
+        'pancakeswap-token': {
+            'utility_governance': True,
+            'utility_discount': True,
+            'incentive_burn': True,
+            'burn_rate': 1.2,
+            'gov_dao_active': False,
+            'top_10_concentration': 45.0,
+            'team_allocation': 15.0,
+        },
+        '1inch': {
+            'utility_governance': True,
+            'utility_discount': True,
+            'gov_dao_active': True,
+            'top_10_concentration': 35.0,
+            'team_allocation': 22.5,
+            'vesting_years': 4,
+        },
+        
+        # Staking / Liquid Staking
+        'lido-dao': {
+            'utility_governance': True,
+            'utility_staking': False,
+            'incentive_staking': True,
+            'gov_timelock': True,
+            'gov_dao_active': True,
+            'top_10_concentration': 42.0,
+            'team_allocation': 20.0,
+        },
+        'rocket-pool': {
+            'utility_governance': True,
+            'utility_staking': True,
+            'incentive_staking': True,
+            'gov_dao_active': True,
+            'top_10_concentration': 28.0,
+            'team_allocation': 18.0,
+        },
+        
+        # Oracle
+        'chainlink': {
+            'utility_gas': True,
+            'utility_staking': True,
+            'incentive_staking': True,
+            'top_10_concentration': 38.0,
+            'team_allocation': 35.0,
+            'vesting_years': 5,
+        },
+        
+        # Gaming / Metaverse
+        'the-sandbox': {
+            'utility_governance': True,
+            'utility_discount': True,
+            'gov_dao_active': False,
+            'top_10_concentration': 48.0,
+            'team_allocation': 25.0,
+            'vesting_years': 3,
+        },
+        'axie-infinity': {
+            'utility_governance': True,
+            'utility_staking': True,
+            'incentive_staking': True,
+            'gov_dao_active': False,
+            'top_10_concentration': 52.0,
+            'team_allocation': 21.0,
+        },
+        'decentraland': {
+            'utility_governance': True,
+            'gov_dao_active': True,
+            'top_10_concentration': 42.0,
+            'team_allocation': 20.0,
+        },
+        
+        # Memecoins
+        'dogecoin': {
+            'utility_gas': True,
+            'team_allocation': 0.0,
+            'top_10_concentration': 35.0,
+            'gov_timelock': False,
+            'gov_multisig': False,
+            'gov_dao_active': False,
+        },
+        'shiba-inu': {
+            'incentive_burn': True,
+            'burn_rate': 0.8,
+            'team_allocation': 0.0,
+            'top_10_concentration': 68.0,
+            'gov_timelock': False,
+            'gov_multisig': True,
+            'gov_dao_active': False,
+        },
+        
+        # Nouveau DeFi 2024
+        'pendle': {
+            'utility_governance': True,
+            'utility_staking': True,
+            'utility_discount': True,
+            'incentive_lock': True,
+            'incentive_staking': True,
+            'incentive_burn': True,
+            'lock_duration_months': 24,
+            'burn_rate': 0.5,
+            'gov_timelock': True,
+            'gov_dao_active': True,
+            'team_allocation': 12.0,
+            'top_10_concentration': 28.0,
+        },
     }
     
     if coin_id in known_tokens:
