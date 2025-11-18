@@ -6,7 +6,6 @@ Utilise Plotly pour des graphiques interactifs.
 import plotly.graph_objects as go
 import plotly.express as px
 from typing import Dict, Any, List
-import pandas as pd
 from tokenomics.scenarios import get_inflation_projection
 
 
