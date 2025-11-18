@@ -4,12 +4,15 @@ Une application Streamlit professionnelle pour analyser la viabilité de la toke
 
 ## 🎯 Objectif
 
-Évaluer la santé économique d'un token selon 5 piliers :
-- **Inflation & Dilution** : pression sur le prix via l'émission
-- **Distribution** : concentration et équité de la supply
-- **Utilité** : cas d'usage réels du token
-- **Gouvernance** : décentralisation et sécurité
-- **Incitations** : mécanismes d'engagement (staking, lock, burn)
+Évaluer la santé économique d'un token selon **8 piliers** :
+- **Inflation & Dilution** (20%) : pression sur le prix via l'émission
+- **Distribution** (15%) : concentration et équité de la supply
+- **Utilité** (20%) : cas d'usage réels du token
+- **Gouvernance** (10%) : décentralisation et sécurité
+- **Incitations** (10%) : mécanismes d'engagement (staking, lock, burn)
+- **💰 Liquidité** (15%) : volume de trading et facilité d'achat/vente
+- **🌍 Adoption** (10%) : traction, market cap, croissance
+- **🔐 Sécurité** (5% bonus) : audits smart contracts, bug bounty
 
 L'analyse produit un **Tokenomics Viability Index** (0–100) et des visualisations claires.
 
