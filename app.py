@@ -642,7 +642,10 @@ def render_analysis_results(params: Dict[str, Any], scenario_name: str = None):
             ("Distribution", score_data['distribution_score'], score_data['distribution_comment']),
             ("Utilité", score_data['utility_score'], score_data['utility_comment']),
             ("Gouvernance", score_data['governance_score'], score_data['governance_comment']),
-            ("Incitations", score_data['incentives_score'], score_data['incentives_comment'])
+            ("Incitations", score_data['incentives_score'], score_data['incentives_comment']),
+            ("💰 Liquidité", score_data.get('liquidity_score', 0), score_data.get('liquidity_comment', 'N/A')),
+            ("🌍 Adoption", score_data.get('adoption_score', 0), score_data.get('adoption_comment', 'N/A')),
+            ("🔐 Sécurité", score_data.get('security_score', 0), score_data.get('security_comment', 'N/A'))
         ]
         
         for name, score, comment in components:

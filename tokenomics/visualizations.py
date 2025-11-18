@@ -175,20 +175,26 @@ def create_score_breakdown_chart(score_data: Dict[str, Any]) -> go.Figure:
     Returns:
         Figure Plotly
     """
-    categories = ['Inflation', 'Distribution', 'Utilité', 'Gouvernance', 'Incitations']
+    categories = ['Inflation', 'Distribution', 'Utilité', 'Gouvernance', 'Incitations', 'Liquidité', 'Adoption', 'Sécurité']
     scores = [
         score_data['inflation_score'],
         score_data['distribution_score'],
         score_data['utility_score'],
         score_data['governance_score'],
-        score_data['incentives_score']
+        score_data['incentives_score'],
+        score_data.get('liquidity_score', 0),
+        score_data.get('adoption_score', 0),
+        score_data.get('security_score', 0)
     ]
     weights = [
         score_data['weights']['inflation'] * 100,
         score_data['weights']['distribution'] * 100,
         score_data['weights']['utility'] * 100,
         score_data['weights']['governance'] * 100,
-        score_data['weights']['incentives'] * 100
+        score_data['weights']['incentives'] * 100,
+        score_data['weights'].get('liquidity', 0) * 100,
+        score_data['weights'].get('adoption', 0) * 100,
+        score_data['weights'].get('security', 0) * 100
     ]
     
     # Couleurs selon le score

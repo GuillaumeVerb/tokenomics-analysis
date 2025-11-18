@@ -235,7 +235,15 @@ def parse_coingecko_to_params(data: Dict[str, Any]) -> Dict[str, Any]:
         'price_usd': market_data.get('current_price', {}).get('usd', 0),
         'market_cap_usd': market_cap,
         'market_cap_rank': market_cap_rank,
-        'description': f"Données CoinGecko avec heuristiques (Rank #{market_cap_rank}). Paramètres qualitatifs estimés automatiquement."
+        'description': f"Données CoinGecko avec heuristiques (Rank #{market_cap_rank}). Paramètres qualitatifs estimés automatiquement.",
+        
+        # Nouvelles métriques de liquidité & volume
+        'volume_24h': market_data.get('total_volume', {}).get('usd', 0),
+        'volume_to_market_cap': (market_data.get('total_volume', {}).get('usd', 0) / market_cap * 100) if market_cap > 0 else 0,
+        'price_change_24h': market_data.get('price_change_percentage_24h', 0),
+        'price_change_7d': market_data.get('price_change_percentage_7d', 0),
+        'price_change_30d': market_data.get('price_change_percentage_30d', 0),
+        'ath_change': market_data.get('ath_change_percentage', {}).get('usd', 0) if isinstance(market_data.get('ath_change_percentage'), dict) else market_data.get('ath_change_percentage', 0),
     }
     
     return params

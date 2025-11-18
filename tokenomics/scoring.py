@@ -1,12 +1,15 @@
 """
 Module de calcul du Tokenomics Viability Index.
 
-Le score final (0-100) est calculé selon 5 composantes :
-1. Inflation (25%)
-2. Distribution (20%)
-3. Utilité (25%)
-4. Gouvernance (15%)
-5. Incitations (15%)
+Le score final (0-100) est calculé selon 8 composantes :
+1. Inflation (20%)
+2. Distribution (15%)
+3. Utilité (20%)
+4. Gouvernance (10%)
+5. Incitations (10%)
+6. Liquidité (15%)
+7. Adoption (10%)
+8. Sécurité (5% bonus)
 """
 
 from typing import Dict, Any, Tuple
@@ -425,23 +428,51 @@ def calculate_viability_index(params: Dict[str, Any]) -> Dict[str, Any]:
         params['inflation_rate']
     )
     
-    # Pondérations
+    # Nouveaux critères
+    liquidity_score, liquidity_comment = calculate_liquidity_score(
+        params.get('volume_24h', 0),
+        params.get('market_cap_usd', 0),
+        params.get('volume_to_market_cap', 0),
+        params.get('market_cap_rank', 999)
+    )
+    
+    adoption_score, adoption_comment = calculate_adoption_score(
+        params.get('market_cap_usd', 0),
+        params.get('market_cap_rank', 999),
+        params.get('price_change_30d', 0)
+    )
+    
+    security_score, security_comment = calculate_security_score(
+        params.get('name', '').lower().replace(' ', '-'),
+        params.get('market_cap_rank', 999)
+    )
+    
+    # Pondérations (total = 105% avec bonus sécurité)
     weights = {
-        'inflation': 0.25,
-        'distribution': 0.20,
-        'utility': 0.25,
-        'governance': 0.15,
-        'incentives': 0.15
+        'inflation': 0.20,
+        'distribution': 0.15,
+        'utility': 0.20,
+        'governance': 0.10,
+        'incentives': 0.10,
+        'liquidity': 0.15,
+        'adoption': 0.10,
+        'security': 0.05  # Bonus
     }
     
-    # Calcul du score final
+    # Calcul du score final (peut dépasser 100 avec bonus sécurité)
     final_score = (
         inflation_score * weights['inflation'] +
         distribution_score * weights['distribution'] +
         utility_score * weights['utility'] +
         governance_score * weights['governance'] +
-        incentives_score * weights['incentives']
+        incentives_score * weights['incentives'] +
+        liquidity_score * weights['liquidity'] +
+        adoption_score * weights['adoption'] +
+        security_score * weights['security']
     )
+    
+    # Cap à 100
+    final_score = min(final_score, 100)
     
     # Détermination du verdict
     if final_score >= 80:
@@ -474,6 +505,12 @@ def calculate_viability_index(params: Dict[str, Any]) -> Dict[str, Any]:
         'governance_comment': governance_comment,
         'incentives_score': round(incentives_score, 1),
         'incentives_comment': incentives_comment,
+        'liquidity_score': round(liquidity_score, 1),
+        'liquidity_comment': liquidity_comment,
+        'adoption_score': round(adoption_score, 1),
+        'adoption_comment': adoption_comment,
+        'security_score': round(security_score, 1),
+        'security_comment': security_comment,
         'weights': weights
     }
 
@@ -505,6 +542,16 @@ def get_recommendations(score_data: Dict[str, Any]) -> list:
     if score_data['incentives_score'] < 50:
         recommendations.append("⚠️ **Incitations faibles** : Peu de mécanismes pour retenir les holders long terme")
     
+    # Nouveaux critères
+    if score_data.get('liquidity_score', 100) < 50:
+        recommendations.append("🚨 **Liquidité très faible** : Risque de slippage et manipulation de prix élevé")
+    
+    if score_data.get('adoption_score', 100) < 50:
+        recommendations.append("⚠️ **Adoption limitée** : Faible traction utilisateurs ou market cap")
+    
+    if score_data.get('security_score', 50) < 40:
+        recommendations.append("🚨 **Sécurité non vérifiée** : Absence d'audits confirmés - risque smart contract")
+    
     if score_data['final_score'] >= 80:
         recommendations.append("✅ **Tokenomics solide** : Le modèle économique semble viable à long terme")
     elif score_data['final_score'] >= 65:
@@ -513,4 +560,223 @@ def get_recommendations(score_data: Dict[str, Any]) -> list:
         recommendations.append("🚨 **Tokenomics très risquée** : Nombreux red flags, prudence recommandée")
     
     return recommendations
+
+
+def calculate_liquidity_score(
+    volume_24h: float,
+    market_cap: float,
+    volume_to_mcap: float,
+    market_cap_rank: int
+) -> Tuple[float, str]:
+    """
+    Calcule le score de liquidité (0-100).
+    
+    Args:
+        volume_24h: Volume 24h en USD
+        market_cap: Market cap en USD
+        volume_to_mcap: Ratio Volume/Market Cap en %
+        market_cap_rank: Rang du token
+        
+    Returns:
+        (score, commentaire)
+    """
+    score = 100.0
+    comments = []
+    
+    # 1. Ratio Volume/Market Cap (jusqu'à -40 points)
+    if volume_to_mcap >= 10:
+        comments.append(f"✅ Liquidité excellente : {volume_to_mcap:.1f}% du market cap")
+    elif volume_to_mcap >= 5:
+        score -= 10
+        comments.append(f"✅ Bonne liquidité : {volume_to_mcap:.1f}% du market cap")
+    elif volume_to_mcap >= 2:
+        score -= 20
+        comments.append(f"⚠️ Liquidité modérée : {volume_to_mcap:.1f}% du market cap")
+    elif volume_to_mcap >= 1:
+        score -= 30
+        comments.append(f"⚠️ Liquidité faible : {volume_to_mcap:.1f}% du market cap")
+    else:
+        score -= 40
+        comments.append(f"🚨 Liquidité très faible : {volume_to_mcap:.1f}% du market cap - risque de slippage")
+    
+    # 2. Volume absolu (jusqu'à -30 points)
+    if volume_24h >= 100_000_000:  # >$100M
+        comments.append("✅ Volume 24h très élevé (>$100M)")
+    elif volume_24h >= 10_000_000:  # >$10M
+        score -= 5
+        comments.append("✅ Volume 24h élevé (>$10M)")
+    elif volume_24h >= 1_000_000:  # >$1M
+        score -= 15
+        comments.append("⚠️ Volume 24h modéré (>$1M)")
+    elif volume_24h >= 100_000:  # >$100K
+        score -= 25
+        comments.append("⚠️ Volume 24h faible (>$100K)")
+    else:
+        score -= 30
+        comments.append("🚨 Volume 24h très faible (<$100K) - risque de manipulation")
+    
+    # 3. Bonus pour les top tokens
+    if market_cap_rank <= 50:
+        score += 10
+        comments.append(f"✅ Top 50 market cap (Rank #{market_cap_rank})")
+    elif market_cap_rank <= 100:
+        score += 5
+        comments.append(f"✅ Top 100 market cap (Rank #{market_cap_rank})")
+    
+    score = max(0, min(100, score))
+    comment = " | ".join(comments)
+    
+    return score, comment
+
+
+def calculate_adoption_score(
+    market_cap: float,
+    market_cap_rank: int,
+    price_change_30d: float
+) -> Tuple[float, str]:
+    """
+    Calcule le score d'adoption (0-100).
+    Note: Version simplifiée sans TVL (nécessiterait DeFiLlama API)
+    
+    Args:
+        market_cap: Market cap en USD
+        market_cap_rank: Rang du token
+        price_change_30d: Variation prix 30j en %
+        
+    Returns:
+        (score, commentaire)
+    """
+    score = 100.0
+    comments = []
+    
+    # 1. Market cap comme proxy d'adoption (jusqu'à -40 points)
+    if market_cap >= 10_000_000_000:  # >$10B
+        comments.append("✅ Adoption massive : Market cap >$10B")
+    elif market_cap >= 1_000_000_000:  # >$1B
+        score -= 10
+        comments.append("✅ Forte adoption : Market cap >$1B")
+    elif market_cap >= 100_000_000:  # >$100M
+        score -= 20
+        comments.append("⚠️ Adoption moyenne : Market cap >$100M")
+    elif market_cap >= 10_000_000:  # >$10M
+        score -= 30
+        comments.append("⚠️ Adoption limitée : Market cap >$10M")
+    else:
+        score -= 40
+        comments.append("🚨 Adoption très faible : Market cap <$10M")
+    
+    # 2. Rank comme indicateur de popularité (jusqu'à -30 points)
+    if market_cap_rank <= 20:
+        score += 10
+        comments.append(f"✅ Top 20 crypto (Rank #{market_cap_rank})")
+    elif market_cap_rank <= 100:
+        score += 5
+        comments.append(f"✅ Top 100 crypto (Rank #{market_cap_rank})")
+    elif market_cap_rank <= 500:
+        score -= 10
+        comments.append(f"⚠️ Rank #{market_cap_rank}")
+    else:
+        score -= 20
+        comments.append(f"⚠️ Rank très bas #{market_cap_rank}")
+    
+    # 3. Momentum (prix 30j) (jusqu'à -20 points)
+    if price_change_30d >= 50:
+        score += 10
+        comments.append(f"📈 Forte croissance : +{price_change_30d:.1f}% (30j)")
+    elif price_change_30d >= 20:
+        score += 5
+        comments.append(f"📈 Bonne croissance : +{price_change_30d:.1f}% (30j)")
+    elif price_change_30d >= -10:
+        comments.append(f"📊 Stable : {price_change_30d:+.1f}% (30j)")
+    elif price_change_30d >= -30:
+        score -= 10
+        comments.append(f"📉 Baisse modérée : {price_change_30d:.1f}% (30j)")
+    else:
+        score -= 20
+        comments.append(f"📉 Forte baisse : {price_change_30d:.1f}% (30j)")
+    
+    score = max(0, min(100, score))
+    comment = " | ".join(comments)
+    
+    return score, comment
+
+
+def calculate_security_score(
+    coin_id: str,
+    market_cap_rank: int
+) -> Tuple[float, str]:
+    """
+    Calcule le score de sécurité (0-100).
+    Base de données manuelle des audits pour les tokens enrichis.
+    
+    Args:
+        coin_id: ID CoinGecko du token
+        market_cap_rank: Rang du token
+        
+    Returns:
+        (score, commentaire)
+    """
+    # Base de données des audits (à enrichir)
+    security_db = {
+        'ethereum': {'audits': 5, 'bug_bounty': True, 'bounty_amount': 10_000_000},
+        'bitcoin': {'audits': 10, 'bug_bounty': False, 'bounty_amount': 0},
+        'uniswap': {'audits': 4, 'bug_bounty': True, 'bounty_amount': 2_000_000},
+        'aave': {'audits': 6, 'bug_bounty': True, 'bounty_amount': 1_000_000},
+        'curve-dao-token': {'audits': 5, 'bug_bounty': True, 'bounty_amount': 500_000},
+        'maker': {'audits': 7, 'bug_bounty': True, 'bounty_amount': 10_000_000},
+        'chainlink': {'audits': 4, 'bug_bounty': True, 'bounty_amount': 1_000_000},
+        'lido-dao': {'audits': 4, 'bug_bounty': True, 'bounty_amount': 2_000_000},
+        'arbitrum': {'audits': 3, 'bug_bounty': True, 'bounty_amount': 2_000_000},
+        'optimism': {'audits': 3, 'bug_bounty': True, 'bounty_amount': 2_000_000},
+        'pendle': {'audits': 3, 'bug_bounty': True, 'bounty_amount': 500_000},
+        'gmx': {'audits': 3, 'bug_bounty': True, 'bounty_amount': 500_000},
+    }
+    
+    score = 50.0  # Score de base (neutre)
+    comments = []
+    
+    if coin_id in security_db:
+        data = security_db[coin_id]
+        
+        # Audits (jusqu'à +30 points)
+        audits = data['audits']
+        if audits >= 5:
+            score += 30
+            comments.append(f"✅ Très bien audité : {audits} audits")
+        elif audits >= 3:
+            score += 20
+            comments.append(f"✅ Bien audité : {audits} audits")
+        elif audits >= 1:
+            score += 10
+            comments.append(f"⚠️ Partiellement audité : {audits} audits")
+        
+        # Bug bounty (jusqu'à +20 points)
+        if data['bug_bounty']:
+            bounty = data['bounty_amount']
+            if bounty >= 1_000_000:
+                score += 20
+                comments.append(f"✅ Bug bounty important : ${bounty:,.0f}")
+            elif bounty >= 100_000:
+                score += 10
+                comments.append(f"✅ Bug bounty actif : ${bounty:,.0f}")
+            else:
+                score += 5
+                comments.append("✅ Bug bounty actif")
+    else:
+        # Pas de données : estimation par heuristique
+        if market_cap_rank <= 50:
+            score = 60
+            comments.append(f"⚠️ Top 50 : généralement audité (Rank #{market_cap_rank})")
+        elif market_cap_rank <= 200:
+            score = 50
+            comments.append(f"⚠️ Audits probables mais non vérifiés (Rank #{market_cap_rank})")
+        else:
+            score = 30
+            comments.append(f"⚠️ Audits non vérifiés - risque smart contract élevé (Rank #{market_cap_rank})")
+        comments.append("ℹ️ Données d'audit à enrichir manuellement")
+    
+    score = max(0, min(100, score))
+    comment = " | ".join(comments)
+    
+    return score, comment
 
