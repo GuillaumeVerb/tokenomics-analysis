@@ -157,7 +157,50 @@ def parse_coingecko_to_params(data: Dict[str, Any]) -> Dict[str, Any]:
         elif remaining_ratio > 2:
             emission_years_left = 10
     
-    # Paramètres par défaut (non disponibles via API CoinGecko)
+    # Heuristiques pour différencier les tokens
+    market_cap = market_data.get('market_cap', {}).get('usd', 0)
+    market_cap_rank = data.get('market_cap_rank', 999)
+    
+    # Estimation de la concentration basée sur le market cap rank
+    if market_cap_rank <= 10:
+        top_10_concentration = 20.0  # Très décentralisé (BTC, ETH)
+    elif market_cap_rank <= 50:
+        top_10_concentration = 30.0  # Bien distribué
+    elif market_cap_rank <= 200:
+        top_10_concentration = 40.0  # Moyennement centralisé
+    else:
+        top_10_concentration = 50.0  # Plus centralisé
+    
+    # Estimation de l'allocation team basée sur l'âge et le type
+    circulating_ratio = circulating_supply / max_supply if max_supply > 0 else 1.0
+    if circulating_ratio > 0.95:
+        team_allocation = 5.0  # Presque tout émis
+        vesting_years = 0
+    elif circulating_ratio > 0.8:
+        team_allocation = 10.0
+        vesting_years = 1
+    elif circulating_ratio > 0.5:
+        team_allocation = 15.0
+        vesting_years = 2
+    else:
+        team_allocation = 20.0  # Beaucoup à émettre = probablement early stage
+        vesting_years = 4
+    
+    # Heuristiques basées sur le market cap pour estimer l'utilité
+    utility_gas = market_cap_rank <= 100  # Top 100 probablement des L1/L2
+    utility_staking = market_cap_rank <= 150  # Top 150 ont souvent du staking
+    utility_governance = market_cap_rank <= 200  # DeFi tokens ont gouvernance
+    
+    # Gouvernance basée sur le market cap
+    gov_timelock = market_cap_rank <= 100
+    gov_multisig = market_cap_rank <= 200
+    gov_dao_active = market_cap_rank <= 150
+    
+    # Incitations basées sur l'inflation
+    incentive_staking = inflation_rate > 0 and market_cap_rank <= 200
+    incentive_burn = False  # Rare, à enrichir manuellement
+    
+    # Paramètres par défaut avec heuristiques
     params = {
         'circulating_supply': circulating_supply,
         'total_supply': total_supply,
@@ -165,24 +208,24 @@ def parse_coingecko_to_params(data: Dict[str, Any]) -> Dict[str, Any]:
         'inflation_rate': round(inflation_rate, 2),
         'emission_years_left': emission_years_left,
         
-        # Paramètres non disponibles via API (valeurs par défaut)
-        'team_allocation': 15.0,
-        'vesting_years': 3,
-        'top_10_concentration': 30.0,
+        # Paramètres estimés via heuristiques
+        'team_allocation': team_allocation,
+        'vesting_years': vesting_years,
+        'top_10_concentration': top_10_concentration,
         
-        'utility_gas': False,
-        'utility_staking': False,
-        'utility_governance': False,
-        'utility_collateral': False,
+        'utility_gas': utility_gas,
+        'utility_staking': utility_staking,
+        'utility_governance': utility_governance,
+        'utility_collateral': market_cap_rank <= 50,  # Top 50 peuvent être collateral
         'utility_discount': False,
         
-        'gov_timelock': True,
-        'gov_multisig': True,
-        'gov_dao_active': True,
+        'gov_timelock': gov_timelock,
+        'gov_multisig': gov_multisig,
+        'gov_dao_active': gov_dao_active,
         
         'incentive_lock': False,
-        'incentive_staking': False,
-        'incentive_burn': False,
+        'incentive_staking': incentive_staking,
+        'incentive_burn': incentive_burn,
         'lock_duration_months': 0,
         'burn_rate': 0.0,
         
@@ -190,8 +233,9 @@ def parse_coingecko_to_params(data: Dict[str, Any]) -> Dict[str, Any]:
         'name': data.get('name', ''),
         'symbol': data.get('symbol', '').upper(),
         'price_usd': market_data.get('current_price', {}).get('usd', 0),
-        'market_cap_usd': market_data.get('market_cap', {}).get('usd', 0),
-        'description': "Données importées depuis CoinGecko. Les paramètres qualitatifs (utilité, gouvernance) sont des valeurs par défaut à ajuster manuellement."
+        'market_cap_usd': market_cap,
+        'market_cap_rank': market_cap_rank,
+        'description': f"Données CoinGecko avec heuristiques (Rank #{market_cap_rank}). Paramètres qualitatifs estimés automatiquement."
     }
     
     return params
@@ -497,7 +541,10 @@ def enhance_params_with_known_data(params: Dict[str, Any], coin_id: str) -> Dict
     
     if coin_id in known_tokens:
         params.update(known_tokens[coin_id])
-        params['description'] += f" | Données enrichies pour {coin_id}"
+        params['description'] = f"✅ Données enrichies avec vraies valeurs pour {params.get('name', coin_id)}"
+        params['is_enriched'] = True
+    else:
+        params['is_enriched'] = False
     
     return params
 

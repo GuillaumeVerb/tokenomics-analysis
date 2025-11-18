@@ -187,11 +187,12 @@ def render_quick_analysis():
                         st.metric("Max Supply", "Illimité")
                 
                 # Badge de qualité des données
-                if "Données enrichies" in params['description']:
-                    st.success(f"✅ **Données enrichies disponibles** | {params['description'].split('|')[0]}")
+                if params.get('is_enriched', False):
+                    st.success(f"✅ **{params['description']}**")
+                    st.info(f"📊 Market Cap Rank: #{params.get('market_cap_rank', 'N/A')}")
                 else:
                     st.info(f"ℹ️ {params['description']}")
-                    st.warning("⚠️ Paramètres qualitatifs estimés. Ajustez manuellement dans le mode analyse manuelle pour plus de précision.")
+                    st.warning("⚠️ **Scores basés sur des heuristiques** (market cap rank, supply ratio). Les 27 tokens enrichis ont des vraies données. Ajustez manuellement pour plus de précision.")
                 
                 # Stocker dans la session
                 st.session_state.analysis_params = params
